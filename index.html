@@ -61,26 +61,41 @@
             let isRotating = false;
             let baseAlpha = Math.PI / 2;
             let baseBeta = Math.PI / 2;
-            let hasPermission = false;
+            let hasPermission = true; // Default: assume permission is not needed
+
+            // Robust permission logic
+            if (typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function") {
+                hasPermission = false; // Now, permission is required
+                // Show a prompt to the user
+                const permissionPrompt = document.createElement('div');
+                permissionPrompt.innerText = 'Tap to enable motion controls';
+                permissionPrompt.style.position = 'absolute';
+                permissionPrompt.style.top = '50%';
+                permissionPrompt.style.left = '50%';
+                permissionPrompt.style.transform = 'translate(-50%, -50%)';
+                permissionPrompt.style.background = 'rgba(0,0,0,0.8)';
+                permissionPrompt.style.color = '#fff';
+                permissionPrompt.style.padding = '20px 40px';
+                permissionPrompt.style.borderRadius = '10px';
+                permissionPrompt.style.zIndex = '1000';
+                permissionPrompt.style.fontSize = '1.2em';
+                document.body.appendChild(permissionPrompt);
+
+                canvas.addEventListener('click', function() {
+                    DeviceOrientationEvent.requestPermission().then(function(permissionState) {
+                        if (permissionState === 'granted') {
+                            hasPermission = true;
+                            permissionPrompt.remove();
+                        } else {
+                            permissionPrompt.innerText = 'Device orientation permission denied.';
+                        }
+                    }).catch(function(error) {
+                        permissionPrompt.innerText = 'Permission denied or error: ' + error;
+                    });
+                }, { once: true });
+            }
 
             if (isMobile) {
-                // Request device orientation permission
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    canvas.addEventListener('click', function() {
-                        DeviceOrientationEvent.requestPermission().then(function(permissionState) {
-                            if (permissionState === 'granted') {
-                                console.log('Device orientation permission granted');
-                                hasPermission = true;
-                            }
-                        }).catch(function(error) {
-                            console.log('Permission denied or error:', error);
-                        });
-                    });
-                } else {
-                    // For devices that don't require permission
-                    hasPermission = true;
-                }
-
                 // Handle device orientation for tilt with different approach
                 window.addEventListener('deviceorientation', function(event) {
                     if (!hasPermission) return;
