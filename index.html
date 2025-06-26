@@ -38,12 +38,15 @@
             cubeMaterial.diffuseColor = new BABYLON.Color3(0.5, 0.5, 0.5);
             cube.material = cubeMaterial;
 
-            // Create camera positioned straight on to the cube
-            const camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 4, 5, cube.position, scene);
+            // Create camera positioned at the same height as the cube (Y = 0)
+            const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 5, cube.position, scene);
             camera.lowerRadiusLimit = 3;
             camera.upperRadiusLimit = 10;
             camera.wheelDeltaPercentage = 0.01;
-            camera.attachControl(canvas, true);
+            
+            // Disable regular camera controls
+            camera.inputs.clear();
+            camera.detachControl(canvas);
 
             // Add light
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
@@ -70,7 +73,7 @@
                         const clampedTiltY = Math.max(-maxTilt, Math.min(maxTilt, tiltY));
                         
                         camera.alpha = targetRotation;
-                        camera.beta = Math.PI / 4 + clampedTiltX;
+                        camera.beta = clampedTiltX; // Apply tilt to both axes
                         camera.gamma = clampedTiltY;
                     }
                 });
