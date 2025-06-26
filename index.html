@@ -81,22 +81,22 @@
                     hasPermission = true;
                 }
 
-                // Handle device orientation for tilt with smoother approach
+                // Handle device orientation for tilt with different approach
                 window.addEventListener('deviceorientation', function(event) {
                     if (!hasPermission) return;
                     
                     if (event.beta !== null && event.gamma !== null) {
-                        // Use gamma for left/right tilt and beta for forward/backward tilt
-                        const tiltX = (event.gamma) * (Math.PI / 180); // Left/right tilt
-                        const tiltY = (event.beta - 45) * (Math.PI / 180); // Forward/backward tilt
+                        // Use beta for left/right tilt and gamma for forward/backward tilt
+                        const tiltX = (event.beta - 45) * (Math.PI / 180); // Left/right tilt
+                        const tiltY = (event.gamma) * (Math.PI / 180); // Forward/backward tilt
                         
-                        // Limit tilt to 15 degrees for more subtle effect
-                        const maxTilt = 15 * (Math.PI / 180);
+                        // Limit tilt to 10 degrees for more subtle effect
+                        const maxTilt = 10 * (Math.PI / 180);
                         const clampedTiltX = Math.max(-maxTilt, Math.min(maxTilt, tiltX));
                         const clampedTiltY = Math.max(-maxTilt, Math.min(maxTilt, tiltY));
                         
                         // Apply tilt with smoothing
-                        const smoothingFactor = 0.1;
+                        const smoothingFactor = 0.05;
                         camera.alpha = baseAlpha + targetRotation + (clampedTiltX * smoothingFactor);
                         camera.beta = baseBeta + (clampedTiltY * smoothingFactor);
                     }
@@ -127,8 +127,8 @@
                     const deltaX = event.changedTouches[0].clientX - startX;
                     
                     if (isRotating && Math.abs(deltaX) > 50) {
-                        // Rotate by 90 degrees
-                        const rotationDirection = deltaX > 0 ? 1 : -1;
+                        // Rotate by 90 degrees (inverted direction)
+                        const rotationDirection = deltaX > 0 ? -1 : 1;
                         targetRotation += (Math.PI / 2) * rotationDirection;
                         
                         // Animate the rotation
