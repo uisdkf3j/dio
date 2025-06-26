@@ -53,29 +53,42 @@
             const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
             light.intensity = 0.7;
 
-            // Mobile tilt detection
+            // Mobile tilt detection with improved approach
             let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             let startX, startY;
-            let currentRotation = 0;
             let targetRotation = 0;
             let isRotating = false;
+            let baseAlpha = Math.PI / 2;
+            let baseBeta = Math.PI / 2;
 
             if (isMobile) {
-                // Handle device orientation for tilt
+                // Request device orientation permission
+                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                    canvas.addEventListener('click', function() {
+                        DeviceOrientationEvent.requestPermission().then(function(permissionState) {
+                            if (permissionState === 'granted') {
+                                console.log('Device orientation permission granted');
+                            }
+                        });
+                    });
+                }
+
+                // Handle device orientation for tilt with smoother approach
                 window.addEventListener('deviceorientation', function(event) {
-                    if (event.beta !== null && event.alpha !== null) {
-                        // Convert device tilt to camera rotation
-                        const tiltX = (event.beta - 45) * (Math.PI / 180); // 45 degrees is default
-                        const tiltY = event.alpha * (Math.PI / 180);
+                    if (event.beta !== null && event.gamma !== null) {
+                        // Use gamma for left/right tilt and beta for forward/backward tilt
+                        const tiltX = (event.gamma) * (Math.PI / 180); // Left/right tilt
+                        const tiltY = (event.beta - 45) * (Math.PI / 180); // Forward/backward tilt
                         
-                        // Limit tilt to 20 degrees
-                        const maxTilt = 20 * (Math.PI / 180);
+                        // Limit tilt to 15 degrees for more subtle effect
+                        const maxTilt = 15 * (Math.PI / 180);
                         const clampedTiltX = Math.max(-maxTilt, Math.min(maxTilt, tiltX));
                         const clampedTiltY = Math.max(-maxTilt, Math.min(maxTilt, tiltY));
                         
-                        // Apply tilt to both alpha and beta axes
-                        camera.alpha = targetRotation + clampedTiltY;
-                        camera.beta = Math.PI / 2 + clampedTiltX;
+                        // Apply tilt with smoothing
+                        const smoothingFactor = 0.1;
+                        camera.alpha = baseAlpha + targetRotation + (clampedTiltX * smoothingFactor);
+                        camera.beta = baseBeta + (clampedTiltY * smoothingFactor);
                     }
                 });
 
@@ -106,7 +119,7 @@
                     if (isRotating && Math.abs(deltaX) > 50) {
                         // Rotate by 90 degrees
                         const rotationDirection = deltaX > 0 ? 1 : -1;
-                        targetRotation += (Math.PI / -2) * rotationDirection;
+                        targetRotation += (Math.PI / 2) * rotationDirection;
                         
                         // Animate the rotation
                         BABYLON.Animation.CreateAndStartAnimation(
@@ -114,9 +127,9 @@
                             camera,
                             "alpha",
                             30,
-                            10,
+                            15,
                             camera.alpha,
-                            targetRotation,
+                            baseAlpha + targetRotation,
                             BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
                         );
                     }
