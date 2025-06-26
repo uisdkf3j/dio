@@ -39,8 +39,8 @@
             cube.material = cubeMaterial;
 
             // Create camera positioned at the same height as the cube (Y = 0)
-            const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 5, cube.position, scene);
-            camera.lowerRadiusLimit = 3;
+            const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, cube.position, scene);
+            camera.lowerRadiusLimit = 0;
             camera.upperRadiusLimit = 10;
             camera.wheelDeltaPercentage = 0.01;
             
@@ -62,10 +62,10 @@
             if (isMobile) {
                 // Handle device orientation for tilt
                 window.addEventListener('deviceorientation', function(event) {
-                    if (event.beta !== null && event.gamma !== null) {
+                    if (event.beta !== null && event.alpha !== null) {
                         // Convert device tilt to camera rotation
                         const tiltX = (event.beta - 45) * (Math.PI / 180); // 45 degrees is default
-                        const tiltY = event.gamma * (Math.PI / 180);
+                        const tiltY = event.alpha * (Math.PI / 180);
                         
                         // Limit tilt to 20 degrees
                         const maxTilt = 20 * (Math.PI / 180);
@@ -74,7 +74,7 @@
                         
                         camera.alpha = targetRotation;
                         camera.beta = clampedTiltX; // Apply tilt to both axes
-                        camera.gamma = clampedTiltY;
+                        camera.alpha = clampedTiltY;
                     }
                 });
 
@@ -105,7 +105,7 @@
                     if (isRotating && Math.abs(deltaX) > 50) {
                         // Rotate by 90 degrees
                         const rotationDirection = deltaX > 0 ? 1 : -1;
-                        targetRotation += (Math.PI / 2) * rotationDirection;
+                        targetRotation += (Math.PI / -2) * rotationDirection;
                         
                         // Animate the rotation
                         BABYLON.Animation.CreateAndStartAnimation(
@@ -113,7 +113,7 @@
                             camera,
                             "alpha",
                             30,
-                            30,
+                            10,
                             camera.alpha,
                             targetRotation,
                             BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
