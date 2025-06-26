@@ -40,9 +40,10 @@
 
             // Create camera positioned at the same height as the cube (Y = 0)
             const camera = new BABYLON.ArcRotateCamera("camera", 0, 0, 10, cube.position, scene);
-            camera.lowerRadiusLimit = 0;
+            camera.lowerRadiusLimit = 3;
             camera.upperRadiusLimit = 10;
             camera.wheelDeltaPercentage = 0.01;
+            camera.alpha = Math.PI / 2;
             
             // Disable regular camera controls
             camera.inputs.clear();
@@ -72,9 +73,9 @@
                         const clampedTiltX = Math.max(-maxTilt, Math.min(maxTilt, tiltX));
                         const clampedTiltY = Math.max(-maxTilt, Math.min(maxTilt, tiltY));
                         
-                        camera.alpha = targetRotation;
-                        camera.beta = clampedTiltX; // Apply tilt to both axes
-                        camera.alpha = clampedTiltY;
+                        // Apply tilt to both alpha and beta axes
+                        camera.alpha = targetRotation + clampedTiltY;
+                        camera.beta = Math.PI / 2 + clampedTiltX;
                     }
                 });
 
